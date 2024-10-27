@@ -1,5 +1,233 @@
 ![UJLV7eebMePrbY5EZuLoZ3](https://github.com/user-attachments/assets/0e6a6492-0e7c-43cb-8cb5-5b672907b974)
 
+Here's a quick guide to setting up AWS CLI, `kubectl`, and `kubeadm` on a Linux machine to configure and deploy on an Amazon EKS (Elastic Kubernetes Service) cluster.
+
+### Step 1: Install and Configure AWS CLI
+
+1. **Install AWS CLI**:
+   ```bash
+   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+   unzip awscliv2.zip
+   sudo ./aws/install
+   ```
+   
+2. **Configure AWS CLI**:
+   ```bash
+   aws configure
+   ```
+   Enter your **Access Key**, **Secret Access Key**, **Region**, and **Output format** (like `json`).
+
+### Step 2: Install `kubectl`
+
+1. **Download kubectl**:
+   ```bash
+   curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-10-25/bin/linux/amd64/kubectl
+   ```
+
+2. **Make kubectl executable**:
+   ```bash
+   chmod +x ./kubectl
+   ```
+
+3. **Move kubectl to your PATH**:
+   ```bash
+   sudo mv ./kubectl /usr/local/bin
+   ```
+
+4. **Verify kubectl installation**:
+   ```bash
+   kubectl version --client
+   ```
+
+### Step 3: Install `kubeadm` (if needed for setup outside managed Kubernetes)
+
+- **For EKS**, `kubeadm` is not required, but if you want it installed for other purposes, run:
+  ```bash
+  sudo apt update
+  sudo apt install -y kubeadm
+  ```
+
+### Step 4: Create and Configure an EKS Cluster
+
+1. **Install eksctl** (tool for EKS cluster setup):
+   ```bash
+   curl --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+   sudo mv /tmp/eksctl /usr/local/bin
+   ```
+
+2. **Create the EKS Cluster**:
+   ```bash
+   eksctl create cluster --name my-cluster --region us-west-2 --nodegroup-name standard-workers --node-type t2.micro --nodes 3
+   ```
+
+3. **Update kubeconfig for kubectl to interact with EKS**:
+   ```bash
+   aws eks --region us-west-2 update-kubeconfig --name my-cluster
+   ```
+
+4. **Verify kubectl is connected to EKS**:
+   ```bash
+   kubectl get nodes
+   ```
+
+### Step 5: Deploy Applications to EKS
+
+1. **Apply Kubernetes Manifest** (for example, deploying a sample app):
+   ```bash
+   kubectl apply -f https://k8s.io/examples/application/deployment.yaml
+   ```
+
+2. **Check Deployment Status**:
+   ```bash
+   kubectl get deployments
+   ```
+
+This setup should allow you to manage and deploy applications on your AWS EKS Kubernetes cluster from your Linux machine.
+
+Here’s how you can set up the Azure CLI, `kubectl`, and manage Kubernetes clusters on Azure AKS (Azure Kubernetes Service) on a Linux machine.
+
+### Step 1: Install and Configure Azure CLI
+
+1. **Install Azure CLI**:
+   ```bash
+   curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+   ```
+
+2. **Log in to Azure**:
+   ```bash
+   az login
+   ```
+   This will open a browser to authenticate. If you're using a server without a browser, use `az login --use-device-code`.
+
+3. **Set the Azure Subscription** (optional, if you have multiple subscriptions):
+   ```bash
+   az account set --subscription "YOUR_SUBSCRIPTION_ID"
+   ```
+
+### Step 2: Install `kubectl`
+
+1. **Install kubectl**:
+   ```bash
+   sudo az aks install-cli
+   ```
+
+2. **Verify kubectl installation**:
+   ```bash
+   kubectl version --client
+   ```
+
+### Step 3: Create an AKS Cluster
+
+1. **Create a Resource Group**:
+   ```bash
+   az group create --name myResourceGroup --location eastus
+   ```
+
+2. **Create an AKS Cluster**:
+   ```bash
+   az aks create --resource-group myResourceGroup --name myAKSCluster --node-count 3 --enable-addons monitoring --generate-ssh-keys
+   ```
+   This will set up an AKS cluster with three nodes and monitoring enabled.
+
+### Step 4: Configure kubectl to Connect to AKS
+
+1. **Get AKS Credentials for kubectl**:
+   ```bash
+   az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
+   ```
+
+2. **Verify Connection to AKS**:
+   ```bash
+   kubectl get nodes
+   ```
+
+### Step 5: Deploy Applications on AKS
+
+1. **Deploy Using a Kubernetes Manifest**:
+   ```bash
+   kubectl apply -f https://k8s.io/examples/application/deployment.yaml
+   ```
+
+2. **Check Deployment Status**:
+   ```bash
+   kubectl get deployments
+   ```
+
+This setup provides everything you need to manage and deploy applications on your Azure AKS Kubernetes cluster. 
+
+Here’s a guide to set up Google Cloud CLI, `kubectl`, and manage Google Kubernetes Engine (GKE) clusters on Google Cloud Platform (GCP) from a Linux machine.
+
+### Step 1: Install and Configure Google Cloud CLI (gcloud)
+
+1. **Install gcloud**:
+   ```bash
+   curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-415.0.0-linux-x86_64.tar.gz
+   tar -xf google-cloud-cli-415.0.0-linux-x86_64.tar.gz
+   ./google-cloud-sdk/install.sh
+   ```
+
+2. **Initialize gcloud and Log In**:
+   ```bash
+   gcloud init
+   ```
+   This will prompt you to log in to your Google account and select a default project and region.
+
+3. **Set the Project** (if not done during `gcloud init`):
+   ```bash
+   gcloud config set project YOUR_PROJECT_ID
+   ```
+
+### Step 2: Install `kubectl`
+
+1. **Install kubectl**:
+   ```bash
+   sudo apt-get install kubectl
+   ```
+
+2. **Verify kubectl installation**:
+   ```bash
+   kubectl version --client
+   ```
+
+### Step 3: Create a GKE Cluster
+
+1. **Enable the Kubernetes API**:
+   ```bash
+   gcloud services enable container.googleapis.com
+   ```
+
+2. **Create a GKE Cluster**:
+   ```bash
+   gcloud container clusters create my-gke-cluster --zone us-central1-a --num-nodes 3
+   ```
+
+### Step 4: Configure kubectl to Connect to GKE
+
+1. **Get Cluster Credentials for kubectl**:
+   ```bash
+   gcloud container clusters get-credentials my-gke-cluster --zone us-central1-a --project YOUR_PROJECT_ID
+   ```
+
+2. **Verify Connection to GKE**:
+   ```bash
+   kubectl get nodes
+   ```
+
+### Step 5: Deploy Applications on GKE
+
+1. **Apply a Kubernetes Manifest to Deploy an Application**:
+   ```bash
+   kubectl apply -f https://k8s.io/examples/application/deployment.yaml
+   ```
+
+2. **Check Deployment Status**:
+   ```bash
+   kubectl get deployments
+   ```
+
+This setup allows you to manage and deploy applications on your Google Kubernetes Engine cluster on GCP. 
+
+
 Configure the **Secrets Store CSI Driver** with Kubernetes to securely access secrets from AWS Secrets Manager, Azure Key Vault, or Google Cloud Secret Manager without storing secrets in Kubernetes.
 
 ---
